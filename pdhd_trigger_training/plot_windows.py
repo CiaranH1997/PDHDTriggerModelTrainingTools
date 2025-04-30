@@ -89,7 +89,6 @@ def plot_windows(tp_dict, event_id, apa, n_bins_ch=None, n_bins_time=50, outfile
     
     canvas.Update()
     canvas.Draw()
-    #canvas.Print("/eos/user/c/chasnip/DUNE/ProtoDUNE_BSM/TriggerTrainingData/CosmicTPs_TPTimeChImages_Ev_APA1.pdf")
     canvas.Print(outfile)
     
     return canvas, hist_list  # Return references if further inspection is needed
@@ -192,7 +191,6 @@ def plot_nu_windows(tp_dict, event_id, n_bins_ch=None, n_bins_time=50, outfile="
     
     canvas.Update()
     canvas.Draw()
-    #canvas.Print("/eos/user/c/chasnip/DUNE/ProtoDUNE_BSM/TriggerTrainingData/NeutrinoTPs_TPTimeChImages_Ev.pdf")
     canvas.Print(outfile)
     
     return canvas, hist_list  # Return references if further inspection is needed
@@ -229,13 +227,11 @@ def plot_th2d_y_projections(th2d_list, outfile="./CosmicTPs_1DTimeProjection_Ev.
         hist_proj.SetTitle(f"ADC with Time {i}")
         hist_proj.SetLineColor(4)
         hist_proj.SetLineWidth(2)
-        #hist_proj.GetYaxis().SetLabelSize(0.045)
         hist_proj.Draw("HIST")
         hist_list.append(hist_proj)
     
     canvas.Update()
     canvas.Draw()
-    #canvas.Print("/eos/user/c/chasnip/DUNE/ProtoDUNE_BSM/TriggerTrainingData/CosmicTPs_1DTimeProjection_Ev.pdf")
     canvas.Print(outfile)
     
     return canvas, hist_list

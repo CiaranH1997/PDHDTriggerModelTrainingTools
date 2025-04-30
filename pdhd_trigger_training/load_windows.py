@@ -131,7 +131,7 @@ def read_neutrino_tp_data(filename):
 
     # Process each event in this tree.
     for i, evt in enumerate(event_ids_list):
-        event_id = int(evt)  # Ensure event_id is non-negative and avoid unnecessary adjustments
+        event_id = int(evt) - 1  # Ensure event_id is non-negative and avoid unnecessary adjustments
                 
         #print(f'APA = {apa[event_id]}')
         if len(windows_times) == 0:
@@ -143,15 +143,11 @@ def read_neutrino_tp_data(filename):
         if event_id not in results:
             results[event_id] = {}
         # Use the tree name as key; you could also use a label like f"APA{apa}"
-        if 0 <= event_id < len(apa_list):
-            apa_key = f"APA{apa_list[event_id]}"
-        else:
-            print(f"Adjusted event_id {event_id} is out of bounds for apa_list.")
-            continue
+        apa_key = f"APA{apa_list[event_id]}"
         #print(f'APA key = {apa_key}')
         if apa_key not in results[event_id]:
             results[event_id][apa_key] = {}
-                
+        
         # For this event, get the list of windows (should be 10 windows).
         event_windows_times    = windows_times[i]
         event_windows_channels = windows_channels[i]
