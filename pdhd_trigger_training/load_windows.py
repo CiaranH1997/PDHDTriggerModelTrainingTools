@@ -1,10 +1,8 @@
 import uproot
 import awkward as ak
-import pprint
-import time
 import numpy as np
 import pandas as pd
-import ROOT
+import ROOT # type: ignore
 
 # Define functions for processing data from intput root files
 

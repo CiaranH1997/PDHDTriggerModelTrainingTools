@@ -1,7 +1,7 @@
 import awkward as ak
 import time
 import numpy as np
-import ROOT
+import ROOT # type: ignore
 
 # Function to plot TH2Ds for each window of a given event and APA
 def plot_windows(tp_dict, event_id, apa, n_bins_ch=None, n_bins_time=50, outfile="./CosmicTPs_TPTimeChImages_Ev_APA1.pdf"):
