@@ -1,13 +1,8 @@
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.layers import Cropping1D
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-from tensorflow.keras.regularizers import l1
-from tensorflow.keras import regularizers
-from tensorflow.keras import backend as K
 
 # Load and preprocess binned time series data
 def load_data(time_binned_adcsum_data, normalise=True):

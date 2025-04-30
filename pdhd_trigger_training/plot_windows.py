@@ -1,13 +1,10 @@
-import uproot
 import awkward as ak
-import pprint
 import time
 import numpy as np
-import pandas as pd
 import ROOT
 
 # Function to plot TH2Ds for each window of a given event and APA
-def plot_windows(tp_dict, event_id, apa, n_bins_ch=None, n_bins_time=50):
+def plot_windows(tp_dict, event_id, apa, n_bins_ch=None, n_bins_time=50, outfile="./CosmicTPs_TPTimeChImages_Ev_APA1.pdf"):
     """
     Create a canvas and plot TH2D histograms for each sub-event (time window) 
     of a specific event and APA.
@@ -92,12 +89,13 @@ def plot_windows(tp_dict, event_id, apa, n_bins_ch=None, n_bins_time=50):
     
     canvas.Update()
     canvas.Draw()
-    canvas.Print("/eos/user/c/chasnip/DUNE/ProtoDUNE_BSM/TriggerTrainingData/CosmicTPs_TPTimeChImages_Ev_APA1.pdf")
+    #canvas.Print("/eos/user/c/chasnip/DUNE/ProtoDUNE_BSM/TriggerTrainingData/CosmicTPs_TPTimeChImages_Ev_APA1.pdf")
+    canvas.Print(outfile)
     
     return canvas, hist_list  # Return references if further inspection is needed
 
 # Function to plot TH2Ds for each window of a given event and APA
-def plot_nu_windows(tp_dict, event_id, n_bins_ch=None, n_bins_time=50):
+def plot_nu_windows(tp_dict, event_id, n_bins_ch=None, n_bins_time=50, outfile="./NeutrinoTPs_TPTimeChImages_Ev.pdf"):
     """
     Create a canvas and plot TH2D histograms for each sub-event (time window) 
     of a specific event and APA.
@@ -194,11 +192,12 @@ def plot_nu_windows(tp_dict, event_id, n_bins_ch=None, n_bins_time=50):
     
     canvas.Update()
     canvas.Draw()
-    canvas.Print("/eos/user/c/chasnip/DUNE/ProtoDUNE_BSM/TriggerTrainingData/NeutrinoTPs_TPTimeChImages_Ev.pdf")
+    #canvas.Print("/eos/user/c/chasnip/DUNE/ProtoDUNE_BSM/TriggerTrainingData/NeutrinoTPs_TPTimeChImages_Ev.pdf")
+    canvas.Print(outfile)
     
     return canvas, hist_list  # Return references if further inspection is needed
 
-def plot_th2d_y_projections(th2d_list):
+def plot_th2d_y_projections(th2d_list, outfile="./CosmicTPs_1DTimeProjection_Ev.pdf"):
     """
     Takes a list of TH2D histograms, projects each onto the Y-axis,
     and plots the resulting TH1D histograms in a TCanvas.
@@ -236,5 +235,7 @@ def plot_th2d_y_projections(th2d_list):
     
     canvas.Update()
     canvas.Draw()
-    canvas.Print("/eos/user/c/chasnip/DUNE/ProtoDUNE_BSM/TriggerTrainingData/CosmicTPs_1DTimeProjection_Ev.pdf")
+    #canvas.Print("/eos/user/c/chasnip/DUNE/ProtoDUNE_BSM/TriggerTrainingData/CosmicTPs_1DTimeProjection_Ev.pdf")
+    canvas.Print(outfile)
+    
     return canvas, hist_list

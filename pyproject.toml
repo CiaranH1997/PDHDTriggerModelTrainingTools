@@ -1,19 +1,30 @@
 [build-system]
-requires = ["hatchling>=1.17.1", "hatch-vcs"]
-build-backend = "hatchling.build"
-
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
-name = "examplepkg"
-description = "Example pkg"
-readme = "README.md"
-author = "John Doe"
-author_email = "john.doe@g.mail.com"
+name               = "pdhd_trigger_training"
+version            = "0.1.0"
+description        = "Package to manage loading and manipulating training data"
+readme             = "README.md"
+requires-python    = ">=3.9"
 
-requires-python = ">=3.9"
+authors = [
+  { name  = "Ciaran Hasnip"
+  , email = "ciaran.mark.hasnip@cern.ch"
+  }
+]
 
-dependencies = ["zfit>=0.20", "pandas", "numpy"]
-version = "0.1.0"
+license = { text = "MIT" }
+
+dependencies = [
+  "zfit>=0.20",
+  "pandas",
+  "numpy"
+]
+
+[project.urls]
+Homepage = "https://github.com/CiaranH1997/PDHDTriggerModelTrainingTools/tree/main"
 
 
 
