@@ -1,0 +1,1 @@
+from .Compact1DCNNAutoencoder import Compact1DCNNAutoencoder
