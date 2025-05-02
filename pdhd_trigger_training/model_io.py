@@ -11,7 +11,7 @@ def save_model(model, export_dir):
     - export_dir: Directory path where the model will be saved.
     """
     os.makedirs(export_dir, exist_ok=True)
-    model.save(export_dir, save_format='tf')
+    model.export(export_dir)
 
 def load_model(export_dir):
     """
