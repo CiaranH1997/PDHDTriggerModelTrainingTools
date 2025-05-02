@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow.keras.models import load_model # type: ignore
 import os
 from tensorflow.python.framework.convert_to_constants import convert_variables_to_constants_v2
 
@@ -23,7 +24,7 @@ def load_model(export_dir):
     Returns:
     - A tf.keras.Model instance.
     """
-    return tf.keras.models.load_model(export_dir)
+    return tf.saved_model.load(export_dir)
 
 def save_frozen_graph(model, export_dir, model_name="frozen_graph.pb"):
     """
