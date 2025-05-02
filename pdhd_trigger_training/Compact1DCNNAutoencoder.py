@@ -47,10 +47,10 @@ class Compact1DCNNAutoencoder:
         frozen_graph_def = frozen_func.graph.as_graph_def()
 
         # Save the frozen graph
-        frozen_graph_dir = os.path.join(export_dir, 'frozen_graph')
+        frozen_graph_dir = os.path.join(export_dir, 'ae_1dcnn_frozen_graph')
         os.makedirs(frozen_graph_dir, exist_ok=True)
         tf.io.write_graph(graph_or_graph_def=frozen_graph_def,
                           logdir=frozen_graph_dir,
-                          name='frozen_graph.pb',
+                          name='ae_1dcnn_frozen_graph.pb',
                           as_text=False)
-        print(f"Frozen graph saved at: {os.path.join(frozen_graph_dir, 'frozen_graph.pb')}")
+        print(f"Frozen graph saved at: {os.path.join(frozen_graph_dir, 'ae_1dcnn_frozen_graph.pb')}")

@@ -161,48 +161,6 @@ def read_neutrino_tp_data(filename):
 
     return results
 
-def plot_th2d_y_projections(th2d_list):
-    """
-    Takes a list of TH2D histograms, projects each onto the Y-axis,
-    and plots the resulting TH1D histograms in a TCanvas.
-    
-    Parameters:
-        th2d_list (list of ROOT.TH2D): List of TH2D histograms.
-    """
-    if not th2d_list:
-        print("Error: Empty list of histograms.")
-        return
-    
-    num_hist = len(th2d_list)
-    rows = 5
-    cols = 2
-    
-    if num_hist != rows * cols:
-        print(f"Warning: Expected {rows * cols} histograms, got {num_hist}. Layout may be incorrect.")
-    
-    ROOT.gStyle.SetOptStat(0)
-    
-    canvas = ROOT.TCanvas("canvas", "TH2D Y Projections", 1200, 1500)
-    canvas.Divide(cols, rows)
-    
-    hist_list = []
-    
-    for i, th2d in enumerate(th2d_list):
-        canvas.cd(i + 1)
-        hist_proj = th2d.ProjectionY(f"projY_{i}")
-        hist_proj.SetTitle(f"ADC with Time {i}")
-        hist_proj.SetLineColor(4)
-        hist_proj.SetLineWidth(2)
-        #hist_proj.GetYaxis().SetLabelSize(0.045)
-        hist_proj.Draw("HIST")
-        hist_list.append(hist_proj)
-    
-    canvas.Update()
-    canvas.Draw()
-    canvas.Print("/eos/user/c/chasnip/DUNE/ProtoDUNE_BSM/TriggerTrainingData/CosmicTPs_1DTimeProjection_Ev.pdf")
-    return canvas, hist_list
-
-
 # Function to bin the TPs in a time series array
 def bin_windows_by_time(sub_grouped_data, bin_width=1000, window_length=20000):                
     binned_data = {}
