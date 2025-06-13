@@ -209,7 +209,7 @@ def bin_windows_by_time(sub_grouped_data,
             #for sub_event in sub_grouped_data[event_id][apa]:
             for i, window in enumerate(sub_grouped_data[event_id][apa]):
                 
-                time_data = np.array(window["Time_peak"])
+                #time_data = np.array(window["Time_peak"])
                 tp_list = sub_grouped_data[event_id][apa][i]
                 time_data = np.array([tp["Time_peak"] for tp in tp_list])
         
