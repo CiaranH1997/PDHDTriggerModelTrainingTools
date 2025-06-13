@@ -21,10 +21,10 @@ def read_tp_data(filename):
     
     # Define a mapping from APA labels to tree names.
     apa_trees = {
-        "APA1": "SmallTriggerTPCInfoDisplay/TPWindowAPA1Tree",
-        "APA2": "SmallTriggerTPCInfoDisplay/TPWindowAPA2Tree",
-        "APA3": "SmallTriggerTPCInfoDisplay/TPWindowAPA3Tree",
-        "APA4": "SmallTriggerTPCInfoDisplay/TPWindowAPA4Tree"
+        "APA1": "NP04TriggerTrainingAndAnalysis/TPWindowAPA1Tree",
+        "APA2": "NP04TriggerTrainingAndAnalysis/TPWindowAPA2Tree",
+        "APA3": "NP04TriggerTrainingAndAnalysis/TPWindowAPA3Tree",
+        "APA4": "NP04TriggerTrainingAndAnalysis/TPWindowAPA4Tree"
     }
     
     apa_timebranch = {
@@ -108,7 +108,7 @@ def read_neutrino_tp_data(filename):
     file = uproot.open(filename)
     
     # --- Step 1. Build a mapping from event id to neutrino APA using GenieTruth ---
-    gt_tree = file["SmallTriggerTPCInfoDisplay/GenieTruth"]
+    gt_tree = file["NP04TriggerTrainingAndAnalysis/GenieTruth"]
     gt_event_ids = gt_tree["EventIterator"].array(library="ak")
     gt_APAs = gt_tree["APA"].array(library="ak")
     
@@ -117,7 +117,7 @@ def read_neutrino_tp_data(filename):
     for eventid, apa in zip(ak.to_list(gt_event_ids), ak.to_list(gt_APAs)):
         nu_truth[int(eventid)] = int(apa)
     
-    tree_name = "SmallTriggerTPCInfoDisplay/TPNuWindowTree"
+    tree_name = "NP04TriggerTrainingAndAnalysis/TPNuWindowTree"
     
     apa_timebranch = "NuWindow_timepeak"
     apa_chanbranch = "NuWindow_channelid"
@@ -209,11 +209,9 @@ def bin_windows_by_time(sub_grouped_data,
             #for sub_event in sub_grouped_data[event_id][apa]:
             for i, window in enumerate(sub_grouped_data[event_id][apa]):
                 
-                #time_data = np.array(window["Time_peak"])
+                time_data = np.array(window["Time_peak"])
                 tp_list = sub_grouped_data[event_id][apa][i]
-                #channel_data = np.array([tp["ChannelID"] for tp in tp_list])
                 time_data = np.array([tp["Time_peak"] for tp in tp_list])
-                #adc_data = np.array([tp["ADC_integral"] for tp in tp_list])
         
                 if len(time_data) == 0:
                     continue

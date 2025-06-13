@@ -1,7 +1,6 @@
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras import layers # type: ignore
-import os
+from tensorflow.keras import layers
 
 class Compact1DCNNAutoencoder:
     def __init__(self, input_shape):
