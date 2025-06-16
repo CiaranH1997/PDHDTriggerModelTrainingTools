@@ -304,9 +304,25 @@ def bin_windows_by_channel_and_time(sub_grouped_data,
 
                 time_min = time_data.min()
                 time_max = time_min + window_length
+                
                 channel_min = channel_data.min()
                 channel_max = channel_data.max()
-
+                if apa == "APA1":
+                    # APA1 has a different channel range
+                    channel_min = 2080
+                    channel_max = 2560
+                elif apa == "APA2": 
+                    channel_min = 7200
+                    channel_max = 7680
+                elif apa == "APA3":
+                    channel_min = 4160
+                    channel_max = 4640
+                elif apa == "APA4":
+                    channel_min = 9280
+                    channel_max = 9760
+                else:
+                    raise ValueError(f"Unknown APA: {apa}. Expected one of 'APA1', 'APA2', 'APA3', 'APA4'.")
+                
                 df = pd.DataFrame(tp_list)
 
                 # Define bin edges
@@ -330,8 +346,10 @@ def bin_windows_by_channel_and_time(sub_grouped_data,
 
                 # 2D histogram: sum of ADC_integral in each (time, channel) bin
                 hist_2d = np.zeros((len(time_bins) - 1, len(channel_bins) - 1), dtype=float)
+                count_2d = np.zeros_like(hist_2d)
 
                 for row in df.itertuples():
+                    count_2d[row.Time_bin, row.Channel_bin] += 1
                     if adc_integral:
                         hist_2d[row.Time_bin, row.Channel_bin] += row.ADC_integral
                     elif tot:
@@ -346,7 +364,8 @@ def bin_windows_by_channel_and_time(sub_grouped_data,
                 # Append the 2D histogram for this sub-event
                 if mean:
                     # If mean is True, normalize the histogram by the number of TPs in each bin
-                    hist_2d /= df.groupby(["Time_bin", "Channel_bin"]).size().values.reshape(hist_2d.shape)
+                    hist_2d = np.divide(hist_2d, count_2d, out=np.zeros_like(hist_2d), where=count_2d != 0)
+                    #hist_2d /= df.groupby(["Time_bin", "Channel_bin"]).size().values.reshape(hist_2d.shape)
                 
                 binned_data[event_id][apa].append(hist_2d)
 

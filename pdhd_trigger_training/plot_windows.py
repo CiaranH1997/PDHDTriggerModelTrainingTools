@@ -32,10 +32,10 @@ def plot_windows(tp_dict, event_id, apa, n_bins_ch=None, n_bins_time=50, outfile
     
     # Set APA channel ranges according to your mapping
     apa_ranges = {
-        "APA1": (2080, 2559),
+        "APA1": (2080, 2560),
         "APA2": (7200, 7680),
-        "APA3": (4160, 4639),
-        "APA4": (9280, 9759)
+        "APA3": (4160, 4640),
+        "APA4": (9280, 9760)
     }
     ch_min, ch_max = apa_ranges[apa]
     if n_bins_ch is None:
