@@ -4,23 +4,11 @@ import numpy as np
 import ROOT # type: ignore
 
 # Function to plot TH2Ds for each window of a given event and APA
+# This function takes a dictionary of time peaks, an event ID, and an APA,
+# and plots the time peaks in a 2D histogram for each sub-event.
+# It returns the canvas and a list of the histograms.
 def plot_windows(tp_dict, event_id, apa, n_bins_ch=None, n_bins_time=50, outfile="./CosmicTPs_TPTimeChImages_Ev_APA1.pdf"):
-    """
-    Create a canvas and plot TH2D histograms for each sub-event (time window) 
-    of a specific event and APA.
     
-    Parameters:
-      sub_grouped_data : dict
-          Data structure returned by group_data_by_APA_time_window.
-      event_id : int or str
-          The event ID to plot.
-      apa : str
-          The APA group to plot (e.g. "APA1").
-      n_bins_ch : int or None
-          Number of bins for ChannelID. If None, it is set to the APA range width.
-      n_bins_time : int
-          Number of bins for the Time_peak axis.
-    """
     if event_id not in tp_dict:
         print(f"Event {event_id} not found in the data.")
         return
@@ -94,21 +82,11 @@ def plot_windows(tp_dict, event_id, apa, n_bins_ch=None, n_bins_time=50, outfile
     return canvas, hist_list  # Return references if further inspection is needed
 
 # Function to plot TH2Ds for each window of a given event and APA
+# This function takes a dictionary of time peaks, an event ID, and an APA,
+# and plots the time peaks in a 2D histogram for each sub-event.
+# It returns the canvas and a list of the histograms.
 def plot_nu_windows(tp_dict, event_id, n_bins_ch=None, n_bins_time=50, outfile="./NeutrinoTPs_TPTimeChImages_Ev.pdf"):
-    """
-    Create a canvas and plot TH2D histograms for each sub-event (time window) 
-    of a specific event and APA.
     
-    Parameters:
-      sub_grouped_data : dict
-          Data structure returned by group_data_by_APA_time_window.
-      event_id : int or str
-          The event ID to plot.
-      n_bins_ch : int or None
-          Number of bins for ChannelID. If None, it is set to the APA range width.
-      n_bins_time : int
-          Number of bins for the Time_peak axis.
-    """
     event_list = []
     
     #if event_id not in tp_dict:
@@ -195,14 +173,12 @@ def plot_nu_windows(tp_dict, event_id, n_bins_ch=None, n_bins_time=50, outfile="
     
     return canvas, hist_list  # Return references if further inspection is needed
 
+# Function to plot Y projections of a list of TH2D histograms
+# This function takes a list of TH2D histograms and plots their Y projections in a grid layout.
+# It returns the canvas and a list of the projected histograms.
+# The output file is saved as a PDF.
 def plot_th2d_y_projections(th2d_list, outfile="./CosmicTPs_1DTimeProjection_Ev.pdf"):
-    """
-    Takes a list of TH2D histograms, projects each onto the Y-axis,
-    and plots the resulting TH1D histograms in a TCanvas.
     
-    Parameters:
-        th2d_list (list of ROOT.TH2D): List of TH2D histograms.
-    """
     if not th2d_list:
         print("Error: Empty list of histograms.")
         return
