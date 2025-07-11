@@ -16,7 +16,6 @@ authors = [
 license = { text = "MIT" }
 
 dependencies = [
-  "zfit>=0.20",
   "rich"
 ]
 
