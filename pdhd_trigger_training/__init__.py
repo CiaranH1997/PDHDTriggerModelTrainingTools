@@ -7,8 +7,10 @@ from .manipulate_windows import (
     filter_tps_in_window,
     filter_sumsadc,
     filter_mean_peak_tot_ratio,
+    average_ratio_window,
     average_or_sum_window,
     average_or_sum_single_window,
+    TP_count,
     make_cut,
     var_filter
 )

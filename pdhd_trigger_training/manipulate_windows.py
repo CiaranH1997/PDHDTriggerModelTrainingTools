@@ -80,8 +80,8 @@ def filter_mean_peak_tot_ratio(tp_data, cut=0):
             for i, window in enumerate(tp_data[event_id][apa]):
                 count_input += 1
                 tp_list = tp_data[event_id][apa][i]
-                window_mean_tot = average_single_window(tp_list, "ToT", True)
-                window_mean_peak = average_single_window(tp_list, "ADC_peak", True)
+                window_mean_tot = average_or_sum_single_window(tp_list, "ToT", True)
+                window_mean_peak = average_or_sum_single_window(tp_list, "ADC_peak", True)
                 
                 ratio = window_mean_peak / window_mean_tot
                 if ratio > cut:
