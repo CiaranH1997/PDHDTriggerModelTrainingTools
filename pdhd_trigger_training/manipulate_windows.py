@@ -54,7 +54,7 @@ def filter_sumsadc(tp_data, cut=0):
             for i, window in enumerate(tp_data[event_id][apa]):
                 count_input += 1
                 tp_list = tp_data[event_id][apa][i]
-                window_sum_sadc = average_single_window(tp_list, "ADC_integral", False)
+                window_sum_sadc = average_or_sum_single_window(tp_list, "ADC_integral", False)
                 
                 if window_sum_sadc > cut:
                     count_output += 1
