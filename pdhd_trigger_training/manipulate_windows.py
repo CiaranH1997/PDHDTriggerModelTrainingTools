@@ -37,7 +37,7 @@ def filter_tps_in_window(tp_data, var="ADC_integral", cut=0):
     return filtered_results
 
 # Function to filter out TPs based on the sum of ADC_integral in each window
-def filter_sumsadc(tp_data, cut=0):
+def filter_single_variable(tp_data, var="ADC_integral", cut=0):
     
     filtered_results = {}
     count_input = 0
@@ -54,7 +54,7 @@ def filter_sumsadc(tp_data, cut=0):
             for i, window in enumerate(tp_data[event_id][apa]):
                 count_input += 1
                 tp_list = tp_data[event_id][apa][i]
-                window_sum_sadc = average_or_sum_single_window(tp_list, "ADC_integral", False)
+                window_sum_sadc = average_or_sum_single_window(tp_list, var, False)
                 
                 if window_sum_sadc > cut:
                     count_output += 1
@@ -85,6 +85,33 @@ def filter_mean_peak_tot_ratio(tp_data, cut=0):
                 
                 ratio = window_mean_peak / window_mean_tot
                 if ratio > cut:
+                    count_output += 1
+                    filtered_results[event_id][apa].append(tp_list)
+    
+    return filtered_results, count_input, count_output
+
+# Function to filter out windows based on the number of TPs in each window
+def filter_number_tps(tp_data, cut=0):
+    
+    filtered_results = {}
+    count_input = 0
+    count_output = 0
+    for event_id in tp_data:
+        
+        filtered_results[event_id] = {}
+        
+        for apa in tp_data[event_id]:
+            
+            if apa not in filtered_results[event_id]:
+                filtered_results[event_id][apa] = []
+            
+            for i, window in enumerate(tp_data[event_id][apa]):
+                count_input += 1
+                tp_list = tp_data[event_id][apa][i]
+                var_data = np.array([tp["ADC_integral"] for tp in tp_list])
+                window_ntps = var_data.size
+                
+                if window_ntps > cut:
                     count_output += 1
                     filtered_results[event_id][apa].append(tp_list)
     
