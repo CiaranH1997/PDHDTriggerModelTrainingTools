@@ -5,8 +5,9 @@ from .load_windows import read_neutrino_tp_data, read_tp_data, bin_windows_by_ti
 from .plot_windows import plot_windows, plot_nu_windows, plot_th2d_y_projections
 from .manipulate_windows import (
     filter_tps_in_window,
-    filter_sumsadc,
+    filter_single_variable,
     filter_mean_peak_tot_ratio,
+    filter_number_tps,
     average_ratio_window,
     average_or_sum_window,
     average_or_sum_single_window,
