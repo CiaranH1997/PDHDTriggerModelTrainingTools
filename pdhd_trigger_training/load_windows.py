@@ -26,9 +26,6 @@ def read_tp_data(filename, include_broken_apa=False):
         "APA3": "NP04TriggerTrainingAndAnalysis/TPWindowAPA3Tree",
         "APA4": "NP04TriggerTrainingAndAnalysis/TPWindowAPA4Tree"
     }
-    if (not include_broken_apa):
-        # Exclude APA1 if broken APA data is not to be included
-        apa_trees.pop("APA1")
     
     apa_timebranch = {
         "APA1": "APA1Window_timepeak",
@@ -60,6 +57,15 @@ def read_tp_data(filename, include_broken_apa=False):
         "APA3": "APA3Window_adcpeak",
         "APA4": "APA4Window_adcpeak"
     }
+
+    if (not include_broken_apa):
+        # Exclude APA1 if broken APA data is not to be included
+        apa_trees.pop("APA1")
+        apa_timebranch.pop("APA1")
+        apa_chanbranch.pop("APA1")
+        apa_adcbranch.pop("APA1")
+        apa_totbranch.pop("APA1")
+        apa_adcpeakbranch.pop("APA1")
     
     # This will hold the final nested dictionary.
     results = {}
@@ -78,8 +84,8 @@ def read_tp_data(filename, include_broken_apa=False):
         # Convert awkward arrays to lists.
         
         # Loop over events in this tree.
-        # for i, evt in enumerate(event_ids):
-        for i, evt in enumerate(tree):
+        for i, evt in enumerate(event_ids):
+        # for i, evt in enumerate(tree):
             event_id = i
             #event_id = int(evt)
             # Initialize the dictionary for this event if not already done.
@@ -106,6 +112,8 @@ def read_tp_data(filename, include_broken_apa=False):
                 for t, ch, cq, tt, cp in zip(win_time, win_channel, win_charge, windows_tot, windows_adcpeak):
                     tp_list.append({"Time_peak": t, "ChannelID": ch, "ADC_integral": cq, "ToT": tt, "ADC_peak": cp})
                 results[event_id][apa][win_idx] = tp_list
+
+    print(f'Total events processed: {len(results)}')
     return results
 
 def read_neutrino_tp_data(filename, include_broken_apa=False):
@@ -158,8 +166,8 @@ def read_neutrino_tp_data(filename, include_broken_apa=False):
     print(f'window times length = {len(windows_times)}')
 
     # Process each event in this tree.
-    #for i, evt in enumerate(event_ids_list):
-    for i, evt in enumerate(tree):
+    for i, evt in enumerate(event_ids_list):
+    #for i, evt in enumerate(tree):
         event_id = i
         #event_id = int(evt) - 1  # Ensure event_id is non-negative and avoid unnecessary adjustments
                 
@@ -195,6 +203,7 @@ def read_neutrino_tp_data(filename, include_broken_apa=False):
             tp_list.append({"Time_peak": t, "ChannelID": ch, "ADC_integral": cq, "ToT": tt, "ADC_peak": cp})
             results[event_id][apa_key][0] = tp_list
 
+    print(f'Total events processed: {len(results)}')
     return results
 
 # Function to bin the TPs in a time series array
