@@ -15,7 +15,7 @@ Create dictionary of TPs indows on each APA plane for each event with the follow
 }
 '''
 
-def read_tp_data(filename):
+def read_tp_data(filename, include_broken_apa=False):
     # Open the ROOT file.
     file = uproot.open(filename)
     
@@ -26,6 +26,9 @@ def read_tp_data(filename):
         "APA3": "NP04TriggerTrainingAndAnalysis/TPWindowAPA3Tree",
         "APA4": "NP04TriggerTrainingAndAnalysis/TPWindowAPA4Tree"
     }
+    if (not include_broken_apa):
+        # Exclude APA1 if broken APA data is not to be included
+        apa_trees.pop("APA1")
     
     apa_timebranch = {
         "APA1": "APA1Window_timepeak",
@@ -75,8 +78,10 @@ def read_tp_data(filename):
         # Convert awkward arrays to lists.
         
         # Loop over events in this tree.
-        for i, evt in enumerate(event_ids):
-            event_id = int(evt)
+        # for i, evt in enumerate(event_ids):
+        for i, evt in enumerate(tree):
+            event_id = i
+            #event_id = int(evt)
             # Initialize the dictionary for this event if not already done.
             if event_id not in results:
                 results[event_id] = {}
@@ -103,7 +108,7 @@ def read_tp_data(filename):
                 results[event_id][apa][win_idx] = tp_list
     return results
 
-def read_neutrino_tp_data(filename):
+def read_neutrino_tp_data(filename, include_broken_apa=False):
     # Open the ROOT file.
     file = uproot.open(filename)
     
@@ -153,8 +158,10 @@ def read_neutrino_tp_data(filename):
     print(f'window times length = {len(windows_times)}')
 
     # Process each event in this tree.
-    for i, evt in enumerate(event_ids_list):
-        event_id = int(evt) - 1  # Ensure event_id is non-negative and avoid unnecessary adjustments
+    #for i, evt in enumerate(event_ids_list):
+    for i, evt in enumerate(tree):
+        event_id = i
+        #event_id = int(evt) - 1  # Ensure event_id is non-negative and avoid unnecessary adjustments
                 
         #print(f'APA = {apa[event_id]}')
         if len(windows_times) == 0:
@@ -162,6 +169,10 @@ def read_neutrino_tp_data(filename):
             print(f'Window has no TPs! Event ID: {event_id}, APA: {current_apa}')
             continue  # No window data for this event.
               
+        if (not include_broken_apa) and (apa_list[event_id]==1):
+            # Skip broken APA1 data unless specified otherwise.
+            continue
+
         # Initialize the event dictionary if needed.
         if event_id not in results:
             results[event_id] = {}
