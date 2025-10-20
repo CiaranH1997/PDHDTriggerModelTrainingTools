@@ -269,7 +269,7 @@ def read_tp_data_to_hdf5(filename, output_hdf5, include_broken_apa=False):
                 event_grp = h5file.require_group(event_grp_name)
                 
                 # Create APA group
-                apa_grp = event_grp.create_group(apa)
+                apa_grp = event_grp.require_group(apa)
                 
                 # Convert awkward to python lists
                 win_times    = ak.to_list(times[i])
@@ -364,7 +364,7 @@ def read_tp_data_to_hdf5_iterate(filename, output_hdf5, include_broken_apa=False
 
                     # Create or get event group
                     event_grp = h5file.require_group(event_grp_name)
-                    apa_grp = event_grp.create_group(apa)
+                    apa_grp = event_grp.require_group(apa)
 
                     # Get windowed TP lists
                     win_times = times_arr[i]
