@@ -246,6 +246,8 @@ def read_tp_data_to_hdf5(filename, output_hdf5, include_broken_apa=False):
                     b.pop(k, None)
                 apa_trees.pop(k, None)
     
+    # Initialize event ID counter
+    event_id_counter = 0
     # Create output HDF5 file
     with h5py.File(output_hdf5, "w") as h5file:
         event_counter = 0
@@ -262,7 +264,9 @@ def read_tp_data_to_hdf5(filename, output_hdf5, include_broken_apa=False):
             adcpeak   = tree[branch_names["adcpeak"][apa]].array(library="ak")
             
             for i, evt in enumerate(event_ids):
-                event_id = int(evt)  # Use actual EventIterator value
+                #event_id = int(evt)  # Use actual EventIterator value
+                event_id = event_id_counter
+                event_id_counter += 1
                 
                 # Create or get event group
                 event_grp_name = f"event_{event_id}"
@@ -324,9 +328,10 @@ def read_tp_data_to_hdf5_iterate(filename, output_hdf5, include_broken_apa=False
         for b in branch_names.values():
             b.pop("APA1", None)
 
+    # --- Initialize event ID counter ---
+    event_id_counter = 0
     # --- Open HDF5 file ---
     with h5py.File(output_hdf5, "w") as h5file:
-        total_events_written = 0
 
         # --- Loop over each APA tree separately ---
         for apa, tree_name in apa_trees.items():
@@ -359,7 +364,9 @@ def read_tp_data_to_hdf5_iterate(filename, output_hdf5, include_broken_apa=False
 
                 # Loop over events in this chunk
                 for i, evt in enumerate(event_ids):
-                    event_id = int(evt)
+                    #event_id = int(evt)
+                    event_id = event_id_counter
+                    event_id_counter += 1
                     event_grp_name = f"event_{event_id}"
 
                     # Create or get event group
@@ -387,12 +394,10 @@ def read_tp_data_to_hdf5_iterate(filename, output_hdf5, include_broken_apa=False
                         win_grp.create_dataset("tot", data=np.array(tt_list, dtype=np.float32), compression="gzip")
                         win_grp.create_dataset("adc_peak", data=np.array(cp_list, dtype=np.float32), compression="gzip")
 
-                    total_events_written += 1
-
             print(f"[HDF5] Finished streaming {apa}")
 
     print(f"[HDF5] ✅ Finished writing all APAs to {output_hdf5}")
-    print(f"[HDF5] Total event-APA-window groups written: {total_events_written}")
+    print(f"[HDF5] Total event-APA-window groups written: {event_id_counter}")
 
 
 def read_neutrino_tp_data_to_hdf5(filename, hdf5_outfile, include_broken_apa=False):
@@ -436,10 +441,13 @@ def read_neutrino_tp_data_to_hdf5(filename, hdf5_outfile, include_broken_apa=Fal
 
     print(f"Number of neutrino events: {len(event_ids_list)}")
 
+    event_id_counter = 0
     # --- Step 3. Create HDF5 file and write incrementally ---
     with h5py.File(hdf5_outfile, "w") as h5f:
         for i, evt in enumerate(event_ids_list):
-            event_id = int(evt)  # global unique index per entry
+            #event_id = int(evt)  # global unique index per entry
+            event_id = event_id_counter
+            event_id_counter += 1
             apa_val = apa_list[i]
 
             # Skip broken APA1 if requested
@@ -499,7 +507,7 @@ def read_neutrino_tp_data_to_hdf5_iterate(filename, hdf5_outfile, include_broken
     branches = ["EventIterator", apa_branch] + list(branch_map.values())
 
     # --- Step 3. Stream through the neutrino TP tree ---
-    total_events_written = 0
+    event_id_counter = 0
     with h5py.File(hdf5_outfile, "w") as h5f:
         for arrays in uproot.iterate(
             f"{filename}:{tree_name}",
@@ -520,7 +528,9 @@ def read_neutrino_tp_data_to_hdf5_iterate(filename, hdf5_outfile, include_broken
 
             # Loop through events in this chunk
             for i, evt in enumerate(event_ids):
-                event_id = int(evt)
+                #event_id = int(evt)
+                event_id = event_id_counter
+                event_id_counter += 1
                 apa_val = int(apa_vals[i])
 
                 # Skip broken APA1 if required
@@ -550,10 +560,8 @@ def read_neutrino_tp_data_to_hdf5_iterate(filename, hdf5_outfile, include_broken
                 apa_group.create_dataset("tot", data=tps_tot, compression="gzip")
                 apa_group.create_dataset("adc_peak", data=tps_adcpeak, compression="gzip")
 
-                total_events_written += 1
-
     print(f"[HDF5] ✅ Finished writing neutrino TP data to {hdf5_outfile}")
-    print(f"[HDF5] Total neutrino events written: {total_events_written}")
+    print(f"[HDF5] Total neutrino events written: {event_id_counter}")
 
 
 # Function to bin the TPs in a time series array
