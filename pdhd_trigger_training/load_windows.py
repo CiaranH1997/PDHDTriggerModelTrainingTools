@@ -750,7 +750,7 @@ def bin_windows_by_channel_and_time(sub_grouped_data,
     return binned_data
 
 
-
+'''
 def bin_windows_by_channel_and_time_hdf5(hdf5_file,
                                          time_bin_width=1000,
                                          channel_bin_width=100,
@@ -873,6 +873,111 @@ def bin_windows_by_channel_and_time_hdf5(hdf5_file,
                         hist_2d = np.divide(hist_2d, count_2d,
                                             out=np.zeros_like(hist_2d),
                                             where=count_2d != 0)
+
+                    binned_data[event_id][apa_key].append(hist_2d)
+
+    return binned_data
+'''
+def bin_windows_by_channel_and_time_hdf5(hdf5_file,
+                                         time_bin_width=1000,
+                                         channel_bin_width=100,
+                                         window_length=20000,
+                                         max_events=None):
+    """
+    Bin TPs in an HDF5 file (APA or neutrino format) by channel and time.
+    Returns a nested dictionary: event_id -> APA -> [2D histogram per window].
+    """
+
+    # APA-specific channel ranges
+    apa_ranges = {
+        "APA1": (2080, 2560),
+        "APA2": (7200, 7680),
+        "APA3": (4160, 4640),
+        "APA4": (9280, 9760)
+    }
+
+    binned_data = {}
+
+    with h5py.File(hdf5_file, "r") as h5f:
+        event_keys = list(h5f.keys())
+        if max_events is not None:
+            event_keys = event_keys[:max_events]
+
+        for ev_key in event_keys:
+            # event_id = int(ev_key)
+            #event_id = ev_key  # Keep as string key to match HDF5 structure
+            if ev_key.startswith("event_"):
+                event_id = int(ev_key.replace("event_", ""))
+            else:
+                event_id = int(ev_key)
+            event_group = h5f[ev_key]
+            binned_data[event_id] = {}
+
+            for apa_key in event_group.keys():
+                apa_group = event_group[apa_key]
+                binned_data[event_id][apa_key] = []
+
+                # Check for windowed or flat datasets
+                if any(k.startswith("window_") for k in apa_group.keys()):
+                    # APA cosmic format
+                    window_names = [w for w in apa_group.keys() if w.startswith("window_")]
+                    is_neutrino = False
+                else:
+                    # Neutrino format — no "window_" prefix, just flat datasets
+                    window_names = ["0"]
+                    is_neutrino = True
+
+                for win_name in window_names:
+                    if is_neutrino:
+                        # Neutrino format: datasets are "time", "channel", etc.
+                        try:
+                            time_data = np.array(apa_group["time"][:])
+                            channel_data = np.array(apa_group["channel"][:])
+                        except KeyError:
+                            continue
+
+                        adc_data = np.array(apa_group["adc_integral"][:])
+                    else:
+                        # Cosmic format: window groups
+                        win_group = apa_group[win_name]
+                        if "time" not in win_group:
+                            continue
+
+                        time_data = np.array(win_group["time"][:])
+                        channel_data = np.array(win_group["channel"][:])
+                        adc_data = np.array(win_group["adc_integral"][:])
+                        
+
+                    if len(time_data) == 0 or len(channel_data) == 0:
+                        continue
+
+                    # Define bin ranges
+                    time_min = time_data.min()
+                    time_max = time_min + window_length
+
+                    ch_min, ch_max = apa_ranges.get(apa_key, (channel_data.min(), channel_data.max()))
+                    time_bins = np.arange(time_min, time_max + time_bin_width, time_bin_width)
+                    channel_bins = np.arange(ch_min, ch_max + channel_bin_width, channel_bin_width)
+
+                    # Bin assignment using pandas
+                    df = pd.DataFrame({
+                        "Time_peak": time_data,
+                        "ChannelID": channel_data,
+                        "Value": adc_data
+                    })
+
+                    df["Time_bin"] = pd.cut(df["Time_peak"], bins=time_bins, labels=False, right=False)
+                    df["Channel_bin"] = pd.cut(df["ChannelID"], bins=channel_bins, labels=False, right=False)
+                    df = df.dropna(subset=["Time_bin", "Channel_bin"])
+                    df["Time_bin"] = df["Time_bin"].astype(int)
+                    df["Channel_bin"] = df["Channel_bin"].astype(int)
+
+                    hist_2d = np.zeros((len(time_bins)-1, len(channel_bins)-1), dtype=float)
+                    count_2d = np.zeros_like(hist_2d)
+
+                    for row in df.itertuples():
+                        count_2d[row.Time_bin, row.Channel_bin] += 1
+                        hist_2d[row.Time_bin, row.Channel_bin] += row.Value
 
                     binned_data[event_id][apa_key].append(hist_2d)
 
