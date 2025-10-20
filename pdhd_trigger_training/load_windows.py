@@ -786,7 +786,12 @@ def bin_windows_by_channel_and_time_hdf5(hdf5_file,
             event_keys = event_keys[:max_events]
 
         for ev_key in event_keys:
-            event_id = int(ev_key)
+            # event_id = int(ev_key)
+            #event_id = ev_key  # Keep as string key to match HDF5 structure
+            if ev_key.startswith("event_"):
+                event_id = int(ev_key.replace("event_", ""))
+            else:
+                event_id = int(ev_key)
             event_group = h5f[ev_key]
             binned_data[event_id] = {}
 
