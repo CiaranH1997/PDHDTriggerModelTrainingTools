@@ -284,7 +284,7 @@ def read_tp_data_to_hdf5(filename, output_hdf5, include_broken_apa=False):
                     if len(t_list) == 0:
                         continue
 
-                    win_grp = apa_grp.create_group(f"window_{win_idx}")
+                    win_grp = apa_grp.require_group(f"window_{win_idx}")
                     win_grp.create_dataset("time", data=np.array(t_list, dtype=np.int32))
                     win_grp.create_dataset("channel", data=np.array(ch_list, dtype=np.int32))
                     win_grp.create_dataset("adc_integral", data=np.array(cq_list, dtype=np.float32))
@@ -380,7 +380,7 @@ def read_tp_data_to_hdf5_iterate(filename, output_hdf5, include_broken_apa=False
                         if len(t_list) == 0:
                             continue
 
-                        win_grp = apa_grp.create_group(f"window_{win_idx}")
+                        win_grp = apa_grp.require_group(f"window_{win_idx}")
                         win_grp.create_dataset("time", data=np.array(t_list, dtype=np.int32), compression="gzip")
                         win_grp.create_dataset("channel", data=np.array(ch_list, dtype=np.int32), compression="gzip")
                         win_grp.create_dataset("adc_integral", data=np.array(cq_list, dtype=np.float32), compression="gzip")
@@ -452,8 +452,8 @@ def read_neutrino_tp_data_to_hdf5(filename, hdf5_outfile, include_broken_apa=Fal
                 continue
 
             apa_key = f"APA{apa_val}"
-            event_group = h5f.create_group(str(event_id))
-            apa_group = event_group.create_group(apa_key)
+            event_group = h5f.require_group(str(event_id))
+            apa_group = event_group.require_group(apa_key)
 
             # Extract the "window 0" TPs for this event
             times = np.array(arrays_list["time"][i][0])
@@ -534,7 +534,7 @@ def read_neutrino_tp_data_to_hdf5_iterate(filename, hdf5_outfile, include_broken
                 # Create group structure in HDF5
                 apa_key = f"APA{apa_val}"
                 event_group = h5f.require_group(str(event_id))
-                apa_group = event_group.create_group(apa_key)
+                apa_group = event_group.require_group(apa_key)
 
                 # For neutrino tree, we expect a single window (index 0)
                 tps_time = np.array(time_chunk[i][0], dtype=np.int32)
