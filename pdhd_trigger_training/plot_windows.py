@@ -1,6 +1,7 @@
 import awkward as ak
 import time
 import numpy as np
+import h5py
 import ROOT # type: ignore
 
 # Function to plot TH2Ds for each window of a given event and APA
@@ -81,6 +82,103 @@ def plot_windows(tp_dict, event_id, apa, n_bins_ch=None, n_bins_time=50, outfile
     
     return canvas, hist_list  # Return references if further inspection is needed
 
+
+
+def plot_windows_from_hdf5(hdf5_file, event_id, apa, n_bins_ch=None, n_bins_time=50, outfile=None):
+    """
+    Plot TH2D histograms for each window of a given event and APA from HDF5 file.
+    """
+    # Open file (read-only)
+    with h5py.File(hdf5_file, "r") as h5f:
+        # Check event exists
+        if str(event_id) not in h5f:
+            print(f"[❌] Event {event_id} not found in {hdf5_file}")
+            return
+        event_group = h5f[str(event_id)]
+
+        # Check APA exists for this event
+        if apa not in event_group:
+            print(f"[❌] No data for {apa} in event {event_id}")
+            return
+        apa_group = event_group[apa]
+
+        # --- Determine number of windows ---
+        # We stored window datasets like "0_time", "1_time", ...
+        window_indices = sorted(
+            {int(k.split("_")[0]) for k in apa_group.keys() if k.endswith("_time")}
+        )
+
+        if len(window_indices) == 0:
+            print(f"[⚠️] No windows found for Event {event_id}, {apa}")
+            return
+
+        # Set APA channel ranges according to mapping
+        apa_ranges = {
+            "APA1": (2080, 2560),
+            "APA2": (7200, 7680),
+            "APA3": (4160, 4640),
+            "APA4": (9280, 9760)
+        }
+        ch_min, ch_max = apa_ranges[apa]
+        if n_bins_ch is None:
+            n_bins_ch = ch_max - ch_min + 1
+
+        # --- Prepare ROOT canvas ---
+        ROOT.gStyle.SetOptStat(0)
+        canvas_name = f"canvas_{int(time.time())}"
+        canvas = ROOT.TCanvas(canvas_name, f"Event {event_id} - {apa}", 1200, 800)
+        n_windows = len(window_indices)
+        cols = 2
+        rows = (n_windows + cols - 1) // cols
+        canvas.Divide(cols, rows)
+
+        hist_list = []
+
+        # --- Loop through each window ---
+        for i, widx in enumerate(window_indices):
+            try:
+                time_data = np.array(apa_group[f"{widx}_time"][:])
+                ch_data   = np.array(apa_group[f"{widx}_channel"][:])
+                adc_data  = np.array(apa_group[f"{widx}_charge"][:]) \
+                    if f"{widx}_charge" in apa_group else np.ones_like(time_data)
+            except KeyError as e:
+                print(f"[⚠️] Missing dataset for window {widx}: {e}")
+                continue
+
+            if len(time_data) == 0:
+                continue
+
+            time_min = time_data.min()
+            time_max = time_data.max()
+
+            hist_name = f"h_event{event_id}_{apa}_sub{widx}"
+            if ROOT.gDirectory.Get(hist_name):
+                ROOT.gDirectory.Delete(hist_name + ";1")
+
+            hist_title = f"Event {event_id} - {apa} - Window {widx}; ChannelID; Time_peak"
+            h2d = ROOT.TH2D(hist_name, hist_title,
+                            n_bins_ch, ch_min, ch_max,
+                            n_bins_time, time_min, time_max)
+            h2d.SetDirectory(0)
+
+            for ch, t, adc in zip(ch_data, time_data, adc_data):
+                h2d.Fill(ch, t, adc)
+
+            hist_list.append(h2d)
+            canvas.cd(i+1)
+            h2d.Draw("COLZ")
+
+        canvas.Update()
+        canvas.Draw()
+
+        if outfile is None:
+            outfile = f"./TP_Event{event_id}_{apa}.pdf"
+        canvas.Print(outfile)
+        print(f"[✅] Plots saved to {outfile}")
+
+    return canvas, hist_list
+
+
 # Function to plot TH2Ds for each window of a given event and APA
 # This function takes a dictionary of time peaks, an event ID, and an APA,
 # and plots the time peaks in a 2D histogram for each sub-event.
@@ -99,10 +197,10 @@ def plot_nu_windows(tp_dict, event_id, n_bins_ch=None, n_bins_time=50, outfile="
     print(event_list)
     # Set APA channel ranges according to your mapping
     apa_ranges = {
-        "APA1": (2080, 2559),
+        "APA1": (2080, 2560),
         "APA2": (7200, 7680),
-        "APA3": (4160, 4639),
-        "APA4": (9280, 9759)
+        "APA3": (4160, 4640),
+        "APA4": (9280, 9760)
     }
 
     # Create a unique canvas name using the time module to avoid conflicts
@@ -210,4 +308,109 @@ def plot_th2d_y_projections(th2d_list, outfile="./CosmicTPs_1DTimeProjection_Ev.
     canvas.Draw()
     canvas.Print(outfile)
     
+    return canvas, hist_list
+
+
+def plot_nu_windows_from_hdf5(hdf5_file, start_event_id, n_events=10,
+                              n_bins_ch=None, n_bins_time=50,
+                              outfile="./NeutrinoTPs_TPTimeChImages_Ev.pdf"):
+    """
+    Plot TH2D histograms for neutrino TP data stored in HDF5.
+    It looks for up to `n_events` events starting at `start_event_id`.
+    """
+
+    # APA channel ranges
+    apa_ranges = {
+        "APA1": (2080, 2560),
+        "APA2": (7200, 7680),
+        "APA3": (4160, 4640),
+        "APA4": (9280, 9760)
+    }
+
+    # Open HDF5 file
+    with h5py.File(hdf5_file, "r") as h5f:
+        # --- Collect up to n_events starting at start_event_id ---
+        event_list = []
+        event_id = start_event_id
+        while len(event_list) < n_events:
+            if str(event_id) in h5f:
+                event_list.append(event_id)
+            event_id += 1
+
+        if len(event_list) == 0:
+            print(f"[❌] No events found starting at ID {start_event_id}")
+            return
+
+        print(f"[ℹ️] Found events to plot: {event_list}")
+
+        ROOT.gStyle.SetOptStat(0)
+
+        # Prepare canvas
+        canvas_name = f"canvas_{int(time.time())}"
+        canvas = ROOT.TCanvas(canvas_name, f"Neutrino TPs starting {start_event_id}", 1200, 800)
+        cols = 2
+        rows = (len(event_list) + cols - 1) // cols
+        canvas.Divide(cols, rows)
+
+        hist_list = []
+
+        # --- Loop through events ---
+        for idx, ev in enumerate(event_list):
+            ev_group = h5f[str(ev)]
+
+            # Find which APA this event has (should only be one)
+            apa_key = None
+            for candidate in apa_ranges.keys():
+                if candidate in ev_group:
+                    apa_key = candidate
+                    break
+
+            if apa_key is None:
+                print(f"[⚠️] No APA group found for event {ev}")
+                continue
+
+            apa_group = ev_group[apa_key]
+
+            # Read the one window datasets
+            try:
+                times = np.array(apa_group["0_time"][:])
+                channels = np.array(apa_group["0_channel"][:])
+                charges = np.array(apa_group["0_charge"][:])
+            except KeyError as e:
+                print(f"[⚠️] Missing dataset for event {ev}: {e}")
+                continue
+
+            if len(times) == 0:
+                print(f"[⚠️] Empty TP window for event {ev}")
+                continue
+
+            time_min, time_max = times.min(), times.max()
+            ch_min, ch_max = apa_ranges[apa_key]
+            if n_bins_ch is None:
+                nbins_ch_this = ch_max - ch_min + 1
+            else:
+                nbins_ch_this = n_bins_ch
+
+            hist_name = f"h_event{ev}_{apa_key}"
+            if ROOT.gDirectory.Get(hist_name):
+                ROOT.gDirectory.Delete(hist_name + ";1")
+
+            hist_title = f"Event {ev} - {apa_key}; ChannelID; Time_peak"
+            h2d = ROOT.TH2D(hist_name, hist_title,
+                            nbins_ch_this, ch_min, ch_max,
+                            n_bins_time, time_min, time_max)
+            h2d.SetDirectory(0)
+
+            for ch, t, adc in zip(channels, times, charges):
+                h2d.Fill(ch, t, adc)
+
+            hist_list.append(h2d)
+            canvas.cd(idx+1)
+            h2d.Draw("COLZ")
+
+        canvas.Update()
+        canvas.Draw()
+        canvas.Print(outfile)
+        print(f"[✅] Saved neutrino TP plots to {outfile}")
+
     return canvas, hist_list
